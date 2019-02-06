@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esame Client ToDo con Bootstrap</title>
+
+<!-- Bootstrap -->
+<link href="node_modules/css/bootstrap.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+</head>
+<body >
+<div class="container-fluid" id="app"> 
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="col-sm-6">
+    <h1> Colonna sinistra</h1>
+    <p>Esercizio di VUE: {{message}}</p>
+    
+    <!-- PRIMO ESERCZIO-->
+    <h1> Aggiungi un ToDo</h1>
+    <div class="form-group">
+      <label>Name:</label>
+      <input type="text" class="form-control" v-model="name" placeholder="name">
+      <label>Description:</label>
+      <input type="text" class="form-control" v-model="description" placeholder="description">
+      <label>Completed:</label>
+      <input type="text" class="form-control" v-model="completed" placeholder="completed">
+      <label>Assigned To:</label>
+      <input type="text" class="form-control" v-model="assignedTo" placeholder="assigned to">
+    </div>
+    <button type="submit" class="btn btn-primary" v-on:click="addToDo">Add To Do</button>
+    <!-- <h3> FILTRA PER USER</h3>-->
+    <button type="submit" class="btn btn-primary" v-on:click="readListByUser"> Filtra per utente</button>
+    <button type="submit" class="btn btn-primary"  v-on:click="readListByState">Mostra Completed/Incompleted</button>
+    <hr width="100%">
+    <label>Inserisci l'ID e modifica il suo stato TRUE/FALSE:</label>
+    <input v-model="id" placeholder="Inserisci ID" type="text" class="form-control">
+    <button type="submit" class="btn btn-primary"  v-on:click="changeStateById">Modifica STATO DI COMPLETAMENTO</button>
+    <hr width="100%">
+    <label class="text-primary">Inserisci l'ID e elimina un TODO:</label>
+    <button v-on:click="deleteToDo" type="submit" class="btn btn-primary" >Delete by ID</button>
+    <div class="mw-100 bg-success">
+      <hr width="100%">
+      &nbsp;</div>
+    <br>
+    <button type="submit" class="btn btn-primary" v-on:click="loadToDo ">SHOW To Do</button>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Completed</th>
+          <th>AssignedTo</th>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in list" v-if="item.visible">
+          <td>{{item.name}}</td>
+          <td>{{item.description}}</td>
+          <td>{{item.completed}}</td>
+          <td>{{item.assignedTo}}</td>
+          <td>{{item.id}}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Cerca Stringa dentro name e description  -->
+    
+    <div class="form-inline my-2 my-lg-0">
+      <input v-model="search" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+     <!-- <button v-on:click="filteredList()" class="btn btn-outline-success my-2 my-sm-0" type="button">Search String</button>-->
+    </div>
+ 
+   <ul class="list-group">
+    <li class="list-group-item" v-for="post in filteredList">{{post.id}}</li>   
+  </ul>
+    <!-- //// -->
+    <hr>
+    <hr>
+    <hr>
+     <button type="submit" class="btn btn-primary" v-on:click="resetAll() ">Reset All</button>
+    <hr>
+    <hr>
+    <hr>
+    <div class="row">
+      <div class="col-xs-4"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></div>
+      <div class="col-xs-4"><span class="glyphicon glyphicon-home" aria-hidden="true"> </span> </div>
+      <div class="col-xs-4"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></div>
+    </div>
+  </div>
+  <!-- /<div class="col-sm-6">-->
+  
+  <div class="col-md-6">
+    <div class="row text-center">
+      <div class="col-md-6 col-md-offset-3">
+        <h1> Colonna destra</h1>
+      </div>
+    </div>
+    <hr>
+    
+    <!-- LIST USERS -->
+    
+    <div class="row">
+      <div class="text-justify col-sm-6">
+        <h2>ELENCO DI USER </h2>
+      </div>
+      <div class="col-sm-6 text-justify">
+        <div class="alert alert-info" v-for="user in users" v-if="!toggle">{{user}}</div>
+        <button 
+        v-on:click="toggle = !toggle" 
+        v-on:click="createNewUser()"
+        type="button" class="btn btn-success btn-sm">
+        Show/Hide User
+        </button>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="text-justify col-sm-6">
+        <h2>AGGIUNGI USER </h2>
+      </div>
+      <div class="col-sm-6 text-justify">
+        <input type="text" class="form-control" v-model="newUser" placeholder="ADD user">
+        <button v-on:click="addUser(newUser)" type="button" class="btn btn-success btn-sm">ADD User </button>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="text-center col-md-12">
+        <div class="well"><strong> ELENCO TODO FILTRATI </strong></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 text-center"> 
+        
+        <!-- LIST TO DO FILTERED -->
+        
+        <div class="panel-group">
+          <div class="panel panel-default">
+            <div class="panel-heading">Filtered by USER</div>
+            <div class="panel-body" 
+        	v-for='itemList in list_filtered' 
+  			v-bind:assignedTo="itemList.assignedTo">
+              <p class="text-primary">{{itemList.name}} </p>
+              <p class="text-primary">{{itemList.description}} </p>
+              <p class="text-primary">{{itemList.completed}} </p>
+              <p class="text-primary">{{itemList.assignedTo}} </p>
+              <p class="text-primary">{{itemList.id}} </p>
+            </div>
+            <div class="panel-heading">Filtered by COMPLETED</div>
+            <div class="panel-body" 
+        	v-for='itemList in list_completed' 
+  			v-bind:completed="itemList.completed">
+              <p class="text-primary">{{itemList.name}} </p>
+              <p class="text-primary">{{itemList.description}} </p>
+              <p class="text-primary">{{itemList.completed}} </p>
+              <p class="text-primary">{{itemList.assignedTo}} </p>
+              <p class="text-primary">{{itemList.id}} </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr>
+  </div>
+</div>
+<!-- /.container-fluid --> 
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+<script src="node_modules/js/jquery-1.11.3.min.js"></script> 
+
+<!-- Include all compiled plugins (below), or include individual files as needed --> 
+<script src="node_modules/js/bootstrap.js"></script> 
+
+<!--VUE--> 
+<script src="node_modules/vue/dist/vue.js"></script> 
+<script src="node_modules/vue-resource/dist/vue-resource.js"></script> 
+<script src="app.js"></script>
+</body>
+</html>
